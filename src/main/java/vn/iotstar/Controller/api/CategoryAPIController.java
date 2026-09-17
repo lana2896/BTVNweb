@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.swagger.v3.oas.annotations.Operation;
 import vn.iotstar.entity.Category;
 import vn.iotstar.model.Response;
 import vn.iotstar.service.ICategoryService;
@@ -121,11 +124,16 @@ public class CategoryAPIController {
 	}
 
 	// Xem ảnh icon đã upload: GET /api/category/images/{filename}
-	@GetMapping("/images/{filename:.+}")
+	@GetMapping(path = "/images/{filename:.+}", produces = MediaType.ALL_VALUE)
 	public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 		Resource file = storageService.loadAsResource(filename);
+		MediaType contentType = MediaTypeFactory.getMediaType(file)
+				.orElse(MediaType.APPLICATION_OCTET_STREAM);
+
 		return ResponseEntity.ok()
+				.contentType(contentType)
 				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
 				.body(file);
 	}
+	
 }
