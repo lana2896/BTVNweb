@@ -14,10 +14,8 @@ import vn.iotstar.entity.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-	// Tìm kiếm theo nội dung tên
 	List<Product> findByProductNameContaining(String name);
 
-	// Tìm kiếm và phân trang
 	Page<Product> findByProductNameContaining(String name, Pageable pageable);
 
 	Optional<Product> findByProductName(String name);

@@ -5,7 +5,7 @@ import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,7 +48,7 @@ public class Product implements Serializable {
 	@Column(nullable = false)
 	private short status;
 
-	@JsonIgnore
+	@JsonIgnoreProperties({ "products" })
 	@ManyToOne
 	@JoinColumn(name = "categoryId")
 	private Category category;

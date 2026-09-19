@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản lý Product (Nguyễn Ngọc Minh Thư 24110347)</title>
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous">
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>var contextPath = "";</script>
+
+<style>
+	body { padding: 30px; }
+	img.imgfluid { border-radius: 4px; object-fit: cover; }
+	.desc-cell { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+
+<div class="container-fluid">
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h3 class="mb-0"><i class="fa-solid fa-boxes-stacked"></i> Quản lý Product (Nguyễn Ngọc Minh Thư 24110347)</h3>
+		<a href="/categories.html" class="btn btn-outline-secondary btn-sm">
+			<i class="fa fa-arrow-left me-1"></i>Quay lại Category
+		</a>
+	</div>
+
+	<div class="row mb-3">
+		<div class="col-auto">
+			<button class="btn btn-success" onclick="showCreateNewProductModal()">
+				<i class="fas fa-plus me-2"></i>Thêm Product
+			</button>
+		</div>
+		<div class="col-auto ms-auto">
+			<div class="input-group">
+				<input type="text" class="form-control" id="searchInput" placeholder="Tìm theo tên sản phẩm...">
+				<button class="btn btn-outline-primary" onclick="searchProduct()">
+					<i class="fa fa-search"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<table class="table table-striped table-bordered align-middle">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:50px">Id</th>
+				<th style="width:100px">Ảnh</th>
+				<th>Tên sản phẩm</th>
+				<th>Category</th>
+				<th style="width:100px">Đơn giá</th>
+				<th style="width:90px">Giảm giá</th>
+				<th style="width:70px">SL</th>
+				<th style="width:100px">Trạng thái</th>
+				<th style="width:130px">Thao tác</th>
+			</tr>
+		</thead>
+		<tbody id="productTableBody">
+		</tbody>
+	</table>
+
+	<nav>
+		<ul class="pagination justify-content-center" id="pagination">
+		</ul>
+	</nav>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="createProductModal">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form id="addProductForm" method="post" onsubmit="return false;" enctype="multipart/form-data">
+				<div class="modal-header">
+					<h5 class="modal-title">Thêm Product</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="mb-3">
+						<label class="form-label">Tên sản phẩm</label>
+						<input type="text" class="form-control" name="productName" required>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Ảnh sản phẩm</label>
+						<input type="file" class="form-control" name="imageFile" required>
+					</div>
+					<div class="row">
+						<div class="col mb-3">
+							<label class="form-label">Đơn giá</label>
+							<input type="number" step="0.01" min="0" class="form-control" name="unitPrice" required>
+						</div>
+						<div class="col mb-3">
+							<label class="form-label">Giảm giá</label>
+							<input type="number" step="0.01" min="0" class="form-control" name="discount" required>
+						</div>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Mô tả</label>
+						<textarea class="form-control" name="description" rows="2" required></textarea>
+					</div>
+					<div class="row">
+						<div class="col mb-3">
+							<label class="form-label">Category</label>
+							<select class="form-select" name="categoryId" id="add_categoryId" required></select>
+						</div>
+						<div class="col mb-3">
+							<label class="form-label">Số lượng</label>
+							<input type="number" min="0" class="form-control" name="quantity" required>
+						</div>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Trạng thái</label>
+						<select class="form-select" name="status" required>
+							<option value="1">Đang bán</option>
+							<option value="0">Ngừng bán</option>
+						</select>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+					<button type="submit" class="btn btn-primary">Thêm</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="updateProductModal">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form id="updateProductForm" method="post" onsubmit="return false;" enctype="multipart/form-data">
+				<div class="modal-header">
+					<h5 class="modal-title">Cập nhật Product</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p><strong>Product ID:</strong> <span id="updateProductId_display"></span></p>
+					<input type="hidden" name="productId" id="productId_up">
+					<div class="mb-3">
+						<label class="form-label">Tên sản phẩm</label>
+						<input type="text" class="form-control" name="productName" id="productName_up" required>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Ảnh sản phẩm (để trống nếu giữ ảnh cũ)</label>
+						<input type="file" class="form-control" name="imageFile" id="imageFile_up">
+					</div>
+					<div class="row">
+						<div class="col mb-3">
+							<label class="form-label">Đơn giá</label>
+							<input type="number" step="0.01" min="0" class="form-control" name="unitPrice" id="unitPrice_up" required>
+						</div>
+						<div class="col mb-3">
+							<label class="form-label">Giảm giá</label>
+							<input type="number" step="0.01" min="0" class="form-control" name="discount" id="discount_up" required>
+						</div>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Mô tả</label>
+						<textarea class="form-control" name="description" id="description_up" rows="2" required></textarea>
+					</div>
+					<div class="row">
+						<div class="col mb-3">
+							<label class="form-label">Category</label>
+							<select class="form-select" name="categoryId" id="update_categoryId" required></select>
+						</div>
+						<div class="col mb-3">
+							<label class="form-label">Số lượng</label>
+							<input type="number" min="0" class="form-control" name="quantity" id="quantity_up" required>
+						</div>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Trạng thái</label>
+						<select class="form-select" name="status" id="status_up" required>
+							<option value="1">Đang bán</option>
+							<option value="0">Ngừng bán</option>
+						</select>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+					<button type="submit" class="btn btn-primary">Cập nhật</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+var categoryCache = [];
+var currentPage = 0;
+var pageSize = 5;
+var currentKeyword = '';
+
+function loadCategoryOptions() {
+	return $.getJSON(contextPath + '/api/category', function (json) {
+		categoryCache = json.body || [];
+		var options = categoryCache.map(function (c) {
+			return '<option value="' + c.categoryId + '">' + c.categoryName + '</option>';
+		}).join('');
+		$('#add_categoryId, #update_categoryId').html(options);
+	});
+}
+
+function loadProductList() {
+	$.getJSON(contextPath + '/api/product/page?name=' + encodeURIComponent(currentKeyword)
+		+ '&page=' + currentPage + '&size=' + pageSize, function (json) {
+		var pageData = json.body || {};
+		var list = pageData.content || [];
+		var rows = [];
+		for (var i = 0; i < list.length; i++) {
+			var item = list[i];
+			var imgUrl = item.images
+				? contextPath + '/api/product/images/' + item.images
+				: 'https://via.placeholder.com/70?text=No+Img';
+			var categoryName = (item.category && item.category.categoryName) ? item.category.categoryName : '-';
+			var categoryId = item.category ? item.category.categoryId : '';
+			var statusText = item.status == 1
+				? '<span class="badge bg-success">Đang bán</span>'
+				: '<span class="badge bg-secondary">Ngừng bán</span>';
+
+			rows.push('<tr>');
+			rows.push('<td>' + item.productId + '</td>');
+			rows.push('<td><img src="' + imgUrl + '" style="width:70px;height:70px" class="imgfluid" alt=""></td>');
+			rows.push('<td>' + item.productName + '</td>');
+			rows.push('<td>' + categoryName + '</td>');
+			rows.push('<td>' + Number(item.unitPrice).toLocaleString() + '</td>');
+			rows.push('<td>' + Number(item.discount).toLocaleString() + '</td>');
+			rows.push('<td>' + item.quantity + '</td>');
+			rows.push('<td>' + statusText + '</td>');
+			rows.push('<td>');
+			rows.push('<button class="btn btn-sm btn-outline-warning me-1" onclick="showEditProductModal(' +
+				item.productId + ', \'' + (item.productName || '').replace(/'/g, "\\'") + '\', ' +
+				item.unitPrice + ', ' + item.discount + ', \'' +
+				(item.description || '').replace(/'/g, "\\'") + '\', ' +
+				categoryId + ', ' + item.quantity + ', ' + item.status + ')">' +
+				'<i class="fa fa-edit"></i></button>');
+			rows.push('<button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(' +
+				item.productId + ')"><i class="fa fa-trash"></i></button>');
+			rows.push('</td>');
+			rows.push('</tr>');
+		}
+		if (list.length === 0) {
+			rows.push('<tr><td colspan="9" class="text-center text-muted">Không có dữ liệu</td></tr>');
+		}
+		$('#productTableBody').html(rows.join(''));
+		renderPagination(pageData.totalPages || 0, pageData.number || 0);
+	});
+}
+
+function renderPagination(totalPages, pageNumber) {
+	var html = [];
+	html.push('<li class="page-item' + (pageNumber === 0 ? ' disabled' : '') + '">' +
+		'<a class="page-link" href="#" onclick="gotoPage(' + (pageNumber - 1) + ');return false;">Trước</a></li>');
+	for (var p = 0; p < totalPages; p++) {
+		html.push('<li class="page-item' + (p === pageNumber ? ' active' : '') + '">' +
+			'<a class="page-link" href="#" onclick="gotoPage(' + p + ');return false;">' + (p + 1) + '</a></li>');
+	}
+	if (totalPages === 0) {
+		html.push('<li class="page-item disabled"><span class="page-link">1</span></li>');
+	}
+	html.push('<li class="page-item' + (pageNumber >= totalPages - 1 ? ' disabled' : '') + '">' +
+		'<a class="page-link" href="#" onclick="gotoPage(' + (pageNumber + 1) + ');return false;">Sau</a></li>');
+	$('#pagination').html(html.join(''));
+}
+
+function gotoPage(page) {
+	if (page < 0) return;
+	currentPage = page;
+	loadProductList();
+}
+
+function searchProduct() {
+	currentKeyword = $('#searchInput').val().trim();
+	currentPage = 0;
+	loadProductList();
+}
+
+$('#searchInput').on('keypress', function (e) {
+	if (e.which === 13) { searchProduct(); }
+});
+
+$(document).ready(function () {
+	loadCategoryOptions().then(loadProductList);
+});
+
+function showCreateNewProductModal() {
+	$('#addProductForm')[0].reset();
+	var modal = new bootstrap.Modal(document.getElementById('createProductModal'));
+	modal.show();
+}
+
+$('#addProductForm').submit(function (e) {
+	e.preventDefault();
+	var formData = new FormData(this);
+	$.ajax({
+		url: contextPath + '/api/product/addProduct',
+		type: 'POST',
+		dataType: 'json',
+		data: formData,
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function (data) {
+			bootstrap.Modal.getInstance(document.getElementById('createProductModal')).hide();
+			loadProductList();
+		},
+		error: function (xhr) {
+			alert('Thêm thất bại: ' + xhr.responseText);
+		}
+	});
+});
+
+function showEditProductModal(productId, productName, unitPrice, discount, description, categoryId, quantity, status) {
+	$('#updateProductId_display').text(productId);
+	$('#productId_up').val(productId);
+	$('#productName_up').val(productName);
+	$('#unitPrice_up').val(unitPrice);
+	$('#discount_up').val(discount);
+	$('#description_up').val(description);
+	$('#update_categoryId').val(categoryId);
+	$('#quantity_up').val(quantity);
+	$('#status_up').val(status);
+	$('#imageFile_up').val('');
+	var modal = new bootstrap.Modal(document.getElementById('updateProductModal'));
+	modal.show();
+}
+
+$('#updateProductForm').submit(function (e) {
+	e.preventDefault();
+	var formData = new FormData(this);
+	$.ajax({
+		url: contextPath + '/api/product/updateProduct',
+		type: 'PUT',
+		dataType: 'json',
+		data: formData,
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function (data) {
+			bootstrap.Modal.getInstance(document.getElementById('updateProductModal')).hide();
+			loadProductList();
+		},
+		error: function (xhr) {
+			alert('Cập nhật thất bại: ' + xhr.responseText);
+		}
+	});
+});
+
+function deleteProduct(productId) {
+	if (!confirm('Bạn có chắc muốn xóa Product này?')) {
+		return;
+	}
+	$.ajax({
+		type: 'DELETE',
+		url: contextPath + '/api/product/deleteProduct?productId=' + productId,
+		dataType: 'json',
+		success: function () {
+			loadProductList();
+		},
+		error: function (xhr) {
+			alert('Xóa thất bại: ' + xhr.responseText);
+		}
+	});
+}
+</script>
+
+</body>
+</html>

@@ -13,10 +13,8 @@ import vn.iotstar.entity.Category;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-	// Tìm kiếm theo nội dung tên
 	List<Category> findByCategoryNameContaining(String name);
 
-	// Tìm kiếm và phân trang
 	Page<Category> findByCategoryNameContaining(String name, Pageable pageable);
 
 	Optional<Category> findByCategoryName(String name);

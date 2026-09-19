@@ -5,6 +5,9 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.swagger.v3.oas.annotations.Operation;
 import vn.iotstar.entity.Category;
 import vn.iotstar.model.Response;
 import vn.iotstar.service.ICategoryService;
@@ -42,6 +44,22 @@ public class CategoryAPIController {
 		// return ResponseEntity.ok().body(categoryService.findAll());
 		return new ResponseEntity<Response>(
 				new Response(true, "Thành công", categoryService.findAll()), HttpStatus.OK);
+	}
+
+	// Tìm kiếm theo tên + phân trang: GET /api/category/page?name=&page=0&size=5
+	@GetMapping(path = "/page")
+	public ResponseEntity<?> getCategoryPage(
+			@RequestParam(value = "name", required = false, defaultValue = "") String name,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "5") int size) {
+
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Category> result = (name == null || name.isBlank())
+				? categoryService.findAll(pageable)
+				: categoryService.findByCategoryNameContaining(name, pageable);
+
+		return new ResponseEntity<Response>(
+				new Response(true, "Thành công", result), HttpStatus.OK);
 	}
 
 	@PostMapping(path = "/getCategory")
@@ -135,5 +153,4 @@ public class CategoryAPIController {
 				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
 				.body(file);
 	}
-	
 }
